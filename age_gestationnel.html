@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
+<title>Âge Gestationnel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #334155;
+    --card: #1e293b;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --accent: #38bdf8;
+    --accent-dim: rgba(56,189,248,0.12);
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem 0.875rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .icon-echo {
+    width: 34px; height: 34px;
+    background: var(--accent-dim);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .icon-echo svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; }
+
+  .topbar h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .topbar p { font-size: 11px; color: var(--text3); font-weight: 400; }
+
+  .container { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Segment control */
+  .segment {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    background: var(--bg2);
+    border-radius: var(--radius);
+    padding: 5px;
+    border: 1px solid var(--border);
+  }
+
+  .seg-btn {
+    padding: 9px 4px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .seg-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(56,189,248,0.25);
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 0.875rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-header-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .card-header span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.875rem; }
+
+  /* Field */
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .field-label .abbr {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .field-row:focus-within { border-color: var(--accent); }
+
+  .field-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 11px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    -moz-appearance: textfield;
+  }
+
+  .field-row input::-webkit-outer-spin-button,
+  .field-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .field-row input::placeholder { color: var(--text3); font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+
+  .field-row .unit {
+    padding: 11px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    letter-spacing: 0.04em;
+  }
+
+  .field-hint { font-size: 11px; color: var(--text3); }
+
+  /* Info banner */
+  .info-banner {
+    background: var(--accent-dim);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--accent);
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+  }
+
+  .info-banner svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Button */
+  .btn-calc {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-calc:active { opacity: 0.85; transform: scale(0.98); }
+
+  /* Error */
+  .error-box {
+    background: var(--red-dim);
+    border: 1px solid rgba(248,113,113,0.25);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--red);
+    display: none;
+  }
+
+  /* Result */
+  .result-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: none;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card.show { display: block; }
+
+  .result-hero {
+    padding: 1.25rem 1rem;
+    background: linear-gradient(135deg, rgba(56,189,248,0.08) 0%, transparent 60%);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .result-sa {
+    font-family: 'DM Mono', monospace;
+    font-size: 42px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .result-sa span { font-size: 20px; color: var(--text2); margin-left: 4px; }
+
+  .result-interval {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .result-mois {
+    font-size: 14px;
+    color: var(--text2);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  .result-mois strong { color: var(--text); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .result-cell {
+    background: var(--card);
+    padding: 0.875rem 1rem;
+  }
+
+  .result-cell .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .result-cell .value { font-size: 14px; font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-blue { background: var(--accent-dim); color: var(--accent); }
+
+  .result-fiab {
+    padding: 0.75rem 1rem;
+    font-size: 12px;
+    color: var(--text3);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .result-fiab::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  /* Detail per-measure */
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .name { color: var(--text2); }
+  .detail-row .val { font-family: 'DM Mono', monospace; color: var(--accent); font-size: 12px; }
+
+  .details-section { padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
+  .details-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); margin-bottom: 8px; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="icon-echo">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4"/></svg>
+    </div>
+    <div>
+      <h1>Âge gestationnel</h1>
+      <p>Calcul échographique — Ibn Zohr</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Segment -->
+  <div class="segment">
+    <button class="seg-btn active" onclick="setMode('T1')" id="btn-T1">&lt; 14 SA<br><span style="font-size:10px;opacity:.7">LCC</span></button>
+    <button class="seg-btn" onclick="setMode('T2')" id="btn-T2">14 – 28 SA<br><span style="font-size:10px;opacity:.7">Biométrie</span></button>
+    <button class="seg-btn" onclick="setMode('T3')" id="btn-T3">&gt; 28 SA<br><span style="font-size:10px;opacity:.7">Biométrie</span></button>
+  </div>
+
+  <!-- T1 -->
+  <div id="fields-T1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-dot"></div>
+        <span>1er trimestre — mesure unique</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <div class="field-label">
+            Longueur cranio-caudale
+            <span class="abbr">LCC</span>
+          </div>
+          <div class="field-row">
+            <input type="number" id="lcc" placeholder="ex : 45" min="1" max="85" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+          <span class="field-hint">Plage valide : 10 mm (6 SA) → 84 mm (14 SA)</span>
+        </div>
+        <div class="info-banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Mesure de référence absolue — fiabilité ± 3 à 5 jours
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- T2 -->
+  <div id="fields-T2" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-dot"></div>
+        <span>2ème trimestre — biométrie</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <div class="field-label">Diamètre bipariétal <span class="abbr">BIP</span></div>
+          <div class="field-row">
+            <input type="number" id="bip" placeholder="ex : 40" min="20" max="100" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Périmètre crânien <span class="abbr">PC</span></div>
+          <div class="field-row">
+            <input type="number" id="pc" placeholder="ex : 150" min="80" max="360" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Périmètre abdominal <span class="abbr">PA</span></div>
+          <div class="field-row">
+            <input type="number" id="pa" placeholder="ex : 135" min="70" max="360" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Longueur fémorale <span class="abbr">LF</span></div>
+          <div class="field-row">
+            <input type="number" id="lf" placeholder="ex : 28" min="10" max="80" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="info-banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Au moins 1 mesure requise — fiabilité ± 1 semaine
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- T3 -->
+  <div id="fields-T3" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-dot"></div>
+        <span>3ème trimestre — biométrie</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <div class="field-label">Diamètre bipariétal <span class="abbr">BIP</span></div>
+          <div class="field-row">
+            <input type="number" id="bip3" placeholder="ex : 75" min="60" max="110" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Périmètre crânien <span class="abbr">PC</span></div>
+          <div class="field-row">
+            <input type="number" id="pc3" placeholder="ex : 270" min="200" max="380" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Périmètre abdominal <span class="abbr">PA</span></div>
+          <div class="field-row">
+            <input type="number" id="pa3" placeholder="ex : 250" min="180" max="400" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Longueur fémorale <span class="abbr">LF</span></div>
+          <div class="field-row">
+            <input type="number" id="lf3" placeholder="ex : 55" min="40" max="80" step="0.1" inputmode="decimal">
+            <span class="unit">mm</span>
+          </div>
+        </div>
+        <div class="info-banner" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2);color:var(--amber)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Fiabilité réduite ± 2–3 semaines — ne pas redater au T3
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="err-msg"></div>
+
+  <!-- Button -->
+  <button class="btn-calc" onclick="calculate()">Calculer l'âge gestationnel</button>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-hero">
+      <div class="result-sa" id="res-sa">—<span>SA</span></div>
+      <div class="result-interval" id="res-interval"></div>
+      <div class="result-mois" id="res-mois"></div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-cell">
+        <div class="label">Statut</div>
+        <div class="value" id="res-statut">—</div>
+      </div>
+      <div class="result-cell">
+        <div class="label">Trimestre</div>
+        <div class="value" id="res-tri">—</div>
+      </div>
+      <div class="result-cell">
+        <div class="label">Marge d'erreur</div>
+        <div class="value" id="res-marge">—</div>
+      </div>
+      <div class="result-cell">
+        <div class="label">Mesures utilisées</div>
+        <div class="value" id="res-count">—</div>
+      </div>
+    </div>
+
+    <div class="details-section" id="detail-section">
+      <div class="details-title">Détail par mesure</div>
+      <div id="detail-rows"></div>
+    </div>
+
+    <div class="result-fiab" id="res-fiab"></div>
+  </div>
+
+</div>
+
+<script>
+let mode = 'T1';
+
+function setMode(m) {
+  mode = m;
+  ['T1','T2','T3'].forEach(t => {
+    document.getElementById('fields-'+t).classList.toggle('hidden', t !== m);
+    document.getElementById('btn-'+t).classList.toggle('active', t === m);
+  });
+  document.getElementById('result-card').classList.remove('show');
+  hideErr();
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const v = parseFloat(el.value);
+  return isNaN(v) ? null : v;
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideErr() {
+  document.getElementById('err-msg').style.display = 'none';
+}
+
+function lccToSA(lcc) { return 6.0 + (lcc / 10.0) * 0.9; }
+function bipToSA(bip)  { return 14 + (bip - 20) * 0.35; }
+function pcToSA(pc)    { return 14 + (pc - 80) * 0.09; }
+function paToSA(pa)    { return 14 + (pa - 70) * 0.09; }
+function lfToSA(lf)    { return 14 + (lf - 10) * 0.52; }
+function bipToSA3(bip) { return 28 + (bip - 70) * 0.5; }
+function pcToSA3(pc)   { return 28 + (pc - 250) * 0.07; }
+function paToSA3(pa)   { return 28 + (pa - 220) * 0.06; }
+function lfToSA3(lf)   { return 28 + (lf - 52) * 0.7; }
+
+function moisObst(sa)  { return (sa / 4.5).toFixed(1); }
+
+function termeBadge(sa) {
+  if (sa < 37) return { label: 'Prématuré', cls: 'badge-red' };
+  if (sa < 39) return { label: 'Terme précoce', cls: 'badge-amber' };
+  if (sa <= 41) return { label: 'À terme', cls: 'badge-green' };
+  return { label: 'Post-terme', cls: 'badge-red' };
+}
+
+function calculate() {
+  hideErr();
+  document.getElementById('result-card').classList.remove('show');
+
+  let sa = null, margin = 0, fiab = '', estimates = [], count = 0;
+  let details = [];
+
+  if (mode === 'T1') {
+    const lcc = val('lcc');
+    if (!lcc) { showErr('Veuillez entrer la valeur LCC.'); return; }
+    if (lcc < 10 || lcc > 84) { showErr('LCC hors plage : 10–84 mm (6 à 14 SA).'); return; }
+    sa = lccToSA(lcc);
+    margin = 0.5;
+    count = 1;
+    details = [{ name: 'LCC', input: lcc + ' mm', sa: sa.toFixed(1) + ' SA' }];
+    fiab = 'LCC — méthode de référence du 1er trimestre (Robinson)';
+  } else if (mode === 'T2') {
+    const pairs = [
+      { id: 'bip', fn: bipToSA, name: 'BIP' },
+      { id: 'pc',  fn: pcToSA,  name: 'PC'  },
+      { id: 'pa',  fn: paToSA,  name: 'PA'  },
+      { id: 'lf',  fn: lfToSA,  name: 'LF'  },
+    ];
+    pairs.forEach(p => {
+      const v = val(p.id);
+      if (v !== null) {
+        const s = p.fn(v);
+        estimates.push(s);
+        count++;
+        details.push({ name: p.name, input: v + ' mm', sa: s.toFixed(1) + ' SA' });
+      }
+    });
+    if (count === 0) { showErr('Entrez au moins une mesure.'); return; }
+    sa = estimates.reduce((a, b) => a + b, 0) / estimates.length;
+    margin = 1;
+    fiab = 'Biométrie fœtale T2 — formules de Hadlock';
+  } else {
+    const pairs = [
+      { id: 'bip3', fn: bipToSA3, name: 'BIP' },
+      { id: 'pc3',  fn: pcToSA3,  name: 'PC'  },
+      { id: 'pa3',  fn: paToSA3,  name: 'PA'  },
+      { id: 'lf3',  fn: lfToSA3,  name: 'LF'  },
+    ];
+    pairs.forEach(p => {
+      const v = val(p.id);
+      if (v !== null) {
+        const s = p.fn(v);
+        estimates.push(s);
+        count++;
+        details.push({ name: p.name, input: v + ' mm', sa: s.toFixed(1) + ' SA' });
+      }
+    });
+    if (count === 0) { showErr('Entrez au moins une mesure.'); return; }
+    sa = estimates.reduce((a, b) => a + b, 0) / estimates.length;
+    margin = 2.5;
+    fiab = 'Biométrie fœtale T3 — ne pas redater, variabilité ±2–3 SA';
+  }
+
+  const saR = Math.round(sa * 10) / 10;
+  const low  = Math.round((sa - margin) * 10) / 10;
+  const high = Math.round((sa + margin) * 10) / 10;
+  const mois = moisObst(saR);
+  const b = termeBadge(saR);
+  const tri = saR < 14 ? '1er trimestre' : saR < 28 ? '2ème trimestre' : '3ème trimestre';
+
+  document.getElementById('res-sa').innerHTML = saR.toFixed(1) + '<span>SA</span>';
+  document.getElementById('res-interval').textContent = 'Intervalle : ' + low + ' – ' + high + ' SA';
+  document.getElementById('res-mois').innerHTML = '≈ <strong>' + mois + ' mois</strong> de grossesse';
+  document.getElementById('res-statut').innerHTML = '<span class="badge ' + b.cls + '">' + b.label + '</span>';
+  document.getElementById('res-tri').innerHTML = '<span class="badge badge-blue">' + tri + '</span>';
+  document.getElementById('res-marge').textContent = '± ' + margin + (margin < 1 ? ' SA' : (margin === 1 ? ' SA' : ' SA'));
+  document.getElementById('res-count').textContent = count + ' mesure' + (count > 1 ? 's' : '');
+  document.getElementById('res-fiab').textContent = fiab;
+
+  const detailSection = document.getElementById('detail-section');
+  if (details.length > 1) {
+    detailSection.style.display = 'block';
+    document.getElementById('detail-rows').innerHTML = details.map(d =>
+      '<div class="detail-row"><span class="name">' + d.name + ' = ' + d.input + '</span><span class="val">' + d.sa + '</span></div>'
+    ).join('');
+  } else {
+    detailSection.style.display = 'none';
+  }
+
+  document.getElementById('result-card').classList.add('show');
+  document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
